@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-chess}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chess}
+      POSTGRES_DB: ${POSTGRES_DB:-chess_move_reader}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: ./apps/api
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-chess}:${POSTGRES_PASSWORD:-chess}@db:5432/${POSTGRES_DB:-chess_move_reader}
+      STORAGE_DIR: /data/uploads
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-["http://localhost:4200"]}
+      OCR_CLIENT: ${OCR_CLIENT:-mock}
+      # Hostname interno de Docker Compose -- deliberadamente NO usa ${OCR_SERVICE_URL}
+      # del .env, que apunta a localhost:8001 para el flujo de desarrollo sin Docker
+      # (uvicorn en el host). Dentro de los contenedores, "ocr" resuelve al servicio.
+      OCR_SERVICE_URL: http://ocr:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploads:/data/uploads
+
+  ocr:
+    build: ./apps/ocr
+    restart: unless-stopped
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CLAUDE_MODEL: ${CLAUDE_MODEL:-claude-opus-4-8}
+    ports:
+      - "8001:8000"
+
+volumes:
+  pgdata:
+  uploads:
