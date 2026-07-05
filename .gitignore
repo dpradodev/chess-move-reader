@@ -1,0 +1,5 @@
+# Variables de entorno locales (contienen ANTHROPIC_API_KEY, credenciales de Postgres, etc.)
+.env
+
+# Datos generados por docker compose fuera de volúmenes nombrados
+data/

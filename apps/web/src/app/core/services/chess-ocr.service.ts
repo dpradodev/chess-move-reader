@@ -1,35 +1,56 @@
-import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, from, of, throwError, timer } from 'rxjs';
+import { filter, switchMap, take } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 import { OcrMoveResult } from '../models/move.model';
 
-const MOCK_OCR_MOVES: OcrMoveResult[] = [
-  { san: 'e4',   confidence: 98 },
-  { san: 'e5',   confidence: 95 },
-  { san: 'Nf3',  confidence: 92 },
-  { san: 'Nc6',  confidence: 97 },
-  { san: 'Bb5',  confidence: 89 },
-  { san: 'a6',   confidence: 85 },
-  { san: '',     confidence: 0  }, // Gap — jugada 4 de blancas (Ba4) no detectada por OCR
-  { san: 'Nf6',  confidence: 91 },
-  { san: 'O-O',  confidence: 72 },
-  { san: 'Be7',  confidence: 88 },
-  { san: 'Re1',  confidence: 65 },
-  { san: 'b5',   confidence: 82 },
-  { san: 'Bb3',  confidence: 91 },
-  { san: 'd6',   confidence: 93 },
-  { san: 'c3',   confidence: 87 },
-  { san: 'O-O',  confidence: 68 },
-  { san: 'h3',   confidence: 94 },
-  { san: 'Nb8',  confidence: 45 },
-  { san: 'd4',   confidence: 88 },
-  { san: 'Nbd7', confidence: 52 },
-  { san: 'c4',   confidence: 90 },
-  { san: 'c6',   confidence: 86 },
-];
+const POLL_INTERVAL_MS = 1000;
+
+interface AnalysisCreated {
+  id: string;
+  status: 'processing' | 'done' | 'error';
+}
+
+interface AnalysisStatusResponse {
+  id: string;
+  status: 'processing' | 'done' | 'error';
+  moves: OcrMoveResult[] | null;
+  error: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ChessOcrService {
-  analyze(_imageDataUrl: string): Observable<OcrMoveResult[]> {
-    return of(MOCK_OCR_MOVES).pipe(delay(1500));
+  private readonly http = inject(HttpClient);
+
+  analyze(imageDataUrl: string): Observable<OcrMoveResult[]> {
+    return from(dataUrlToBlob(imageDataUrl)).pipe(
+      switchMap((blob) => {
+        const formData = new FormData();
+        formData.append('image', blob, 'scoresheet.png');
+        return this.http.post<AnalysisCreated>(`${environment.apiUrl}/api/v1/analyses`, formData);
+      }),
+      switchMap(({ id }) => this.pollUntilFinished(id)),
+    );
   }
+
+  private pollUntilFinished(id: string): Observable<OcrMoveResult[]> {
+    return timer(0, POLL_INTERVAL_MS).pipe(
+      switchMap(() =>
+        this.http.get<AnalysisStatusResponse>(`${environment.apiUrl}/api/v1/analyses/${id}`),
+      ),
+      filter((result) => result.status !== 'processing'),
+      take(1),
+      switchMap((result) => {
+        if (result.status === 'error') {
+          return throwError(() => new Error(result.error ?? 'El análisis OCR ha fallado'));
+        }
+        return of(result.moves ?? []);
+      }),
+    );
+  }
+}
+
+function dataUrlToBlob(dataUrl: string): Promise<Blob> {
+  return fetch(dataUrl).then((response) => response.blob());
 }
