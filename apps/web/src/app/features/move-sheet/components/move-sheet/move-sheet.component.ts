@@ -93,12 +93,12 @@ import { MoveRowComponent } from '../move-row/move-row.component';
               </div>
 
               <div class="flex items-start gap-3">
-                <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#fce8ec]">
-                  <span class="text-[10px] font-bold text-[#b85c6e]">—</span>
+                <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-red-50">
+                  <span class="text-[10px] font-bold text-red-600">—</span>
                 </div>
                 <div>
                   <p class="text-xs font-semibold text-[#2a1820]">Jugada no detectada</p>
-                  <p class="text-xs text-[#7a4a58]">Celda con borde discontinuo: el OCR no reconoció esa jugada. Tócala para rellenarla manualmente y desbloquear el tablero.</p>
+                  <p class="text-xs text-[#7a4a58]">Celda roja con borde discontinuo: el OCR no reconoció esa jugada. Tócala para rellenarla manualmente y desbloquear el tablero.</p>
                 </div>
               </div>
 

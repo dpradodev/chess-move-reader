@@ -6,9 +6,11 @@ Angular + computer vision app to read chess scoresheets, validate moves and expo
 
 ```
 apps/
-  web/       Angular 22 — sube la planilla, muestra tablero + planilla editable
+  web/       Angular 22 — analizador de una planilla suelta (sube, revisa, exporta PGN)
+  web2/      Angular 22 — "ChessKeeper", evolución a gestor de planillas (biblioteca de partidas, cuentas). En construcción, convive con apps/web.
   api/       FastAPI + PostgreSQL — recibe la petición de análisis, guarda imagen/logs/jugadas
   ocr/       FastAPI — transcribe la planilla con el modelo de visión de Claude
+design/      Export de Figma Make del diseño de apps/web2 (React/Vite, solo referencia — no se ejecuta)
 packages/
   samples/   Imágenes de ejemplo para probar el flujo de OCR
 docs/        Documentación de arquitectura, contrato de API y roadmap
@@ -65,6 +67,8 @@ API key) para poder probar el flujo completo ya mismo; con `OCR_CLIENT=http` del
 ## Más detalles
 
 - [`apps/web/README.md`](apps/web/README.md) — comandos de Angular CLI (build, test, e2e).
+- [`apps/web2/README.md`](apps/web2/README.md) — qué es "ChessKeeper", de dónde viene el diseño y qué queda pendiente de portar.
+- [`docs/chess-board.md`](docs/chess-board.md) — arquitectura del tablero (`<app-board>`), API pública, animación, drag & drop con Pointer Events.
 - [`apps/api/README.md`](apps/api/README.md) — endpoints, cliente OCR intercambiable, simplificaciones a revisar.
 - [`apps/ocr/README.md`](apps/ocr/README.md) — cómo transcribe la planilla con el modelo de visión de Claude y filtra alucinaciones.
 - [`docs/database.md`](docs/database.md) — cómo conectarte a Postgres y consultar las tablas (`psql`, cliente gráfico).

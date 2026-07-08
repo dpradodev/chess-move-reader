@@ -48,20 +48,20 @@ function confidenceColor(c: number): string {
       } @else if (status(slot) === 'gap') {
         <div class="flex min-w-0 items-center gap-0.5">
           <div
-            class="min-w-0 flex-1 cursor-pointer truncate rounded border border-dashed border-[#d4b0bc] bg-[#fce8ec] pl-3 pr-2 py-0.5 font-mono text-xs transition-colors hover:bg-[#f5d8e0]"
+            class="min-w-0 flex-1 cursor-pointer truncate rounded border border-dashed border-red-300 bg-red-50 pl-3 pr-2 py-0.5 font-mono text-xs transition-colors hover:bg-red-100"
             [attr.data-active]="isActive(slot)"
             (click)="startEdit(slot, notation(slot))"
           >
             @if (notation(slot)) {
-              <span class="text-[#8a3a4e] opacity-60 line-through">{{ notation(slot) }}</span>
+              <span class="text-red-700 opacity-70 line-through">{{ notation(slot) }}</span>
             } @else {
-              <span class="select-none text-[#b85c6e]">—</span>
+              <span class="select-none text-red-500">—</span>
             }
           </div>
           <button
             type="button"
             (click)="startEdit(slot, notation(slot))"
-            class="shrink-0 rounded p-0.5 text-[#b85c6e] transition-colors hover:bg-[#f5d8e0] hover:text-[#8a3a4e]"
+            class="shrink-0 rounded p-0.5 text-red-500 transition-colors hover:bg-red-100 hover:text-red-700"
             title="Rellenar jugada"
             aria-label="Rellenar jugada"
           >

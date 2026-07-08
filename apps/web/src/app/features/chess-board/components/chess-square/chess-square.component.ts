@@ -1,21 +1,13 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { File, Rank } from '../../../../core/models/position.model';
-import { BoardPiece } from '../../../../core/utils/fen.utils';
-import { ChessPieceComponent } from '../chess-piece/chess-piece.component';
 
 @Component({
   selector: 'app-chess-square',
-  imports: [ChessPieceComponent],
   template: `
     <div
-      class="relative flex items-center justify-center aspect-square select-none"
+      class="relative aspect-square select-none"
       [class]="squareBg()"
-      [class.cursor-pointer]="selected() || isPossibleMove() || isSelectable()"
-      [attr.aria-label]="label()"
       [attr.data-square]="label()"
-      (click)="clicked.emit()"
-      (dragover)="$event.preventDefault()"
-      (drop)="onDrop($event)"
     >
       <!-- Last move highlight -->
       @if (isLastMove()) {
@@ -27,54 +19,56 @@ import { ChessPieceComponent } from '../chess-piece/chess-piece.component';
         <div class="absolute inset-0 bg-emerald-400/40 pointer-events-none z-0"></div>
       }
 
-      <!-- Possible move indicator: dot on empty, ring on capture -->
-      @if (isPossibleMove()) {
-        @if (piece()) {
-          <div class="absolute inset-0 ring-4 ring-inset ring-emerald-600/50 pointer-events-none z-20 rounded-[1px]"></div>
-        } @else {
-          <div class="absolute inset-[30%] rounded-full bg-emerald-700/35 pointer-events-none z-20"></div>
-        }
+      <!-- Check highlight -->
+      @if (isCheck()) {
+        <div class="absolute inset-0 pointer-events-none z-0 check-pulse"></div>
       }
 
-      <!-- Piece -->
-      @if (piece()) {
-        <div
-          class="absolute inset-[2%] z-10"
-          [attr.draggable]="isSelectable() ? true : null"
-          (dragstart)="onDragStart($event)"
-          (dragend)="dragEnded.emit()"
-        >
-          <app-chess-piece [type]="piece()!.type" [color]="piece()!.color" />
-        </div>
+      <!-- Possible move indicator: dot on empty, ring on capture -->
+      @if (isPossibleCapture()) {
+        <div class="absolute inset-0 ring-4 ring-inset ring-emerald-600/50 pointer-events-none z-0 rounded-[1px]"></div>
+      } @else if (isPossibleMove()) {
+        <div class="absolute inset-[30%] rounded-full bg-emerald-700/35 pointer-events-none z-0"></div>
+      }
+
+      <!-- Drag-over highlight -->
+      @if (isDragOver()) {
+        <div class="absolute inset-0 ring-4 ring-inset ring-sky-400/70 pointer-events-none z-0"></div>
       }
 
       <!-- Coordinate labels -->
       @if (showRank()) {
-        <span class="absolute top-0.5 left-1 text-[10px] font-semibold leading-none z-30 pointer-events-none"
+        <span class="absolute top-0.5 left-1 text-[10px] font-semibold leading-none z-0 pointer-events-none"
           [class]="coordColor()">{{ rank() }}</span>
       }
       @if (showFile()) {
-        <span class="absolute bottom-0.5 right-1 text-[10px] font-semibold leading-none z-30 pointer-events-none"
+        <span class="absolute bottom-0.5 right-1 text-[10px] font-semibold leading-none z-0 pointer-events-none"
           [class]="coordColor()">{{ file() }}</span>
       }
     </div>
   `,
+  styles: [`
+    .check-pulse {
+      background: radial-gradient(circle, rgba(220, 38, 38, 0.85) 0%, rgba(220, 38, 38, 0.35) 55%, transparent 75%);
+      animation: check-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes check-pulse {
+      0%, 100% { opacity: 0.85; }
+      50% { opacity: 0.5; }
+    }
+  `],
 })
 export class ChessSquareComponent {
   readonly file = input.required<File>();
   readonly rank = input.required<Rank>();
-  readonly piece = input<BoardPiece | undefined>(undefined);
   readonly selected = input(false);
-  readonly isSelectable = input(false);
   readonly isPossibleMove = input(false);
+  readonly isPossibleCapture = input(false);
   readonly isLastMove = input(false);
+  readonly isCheck = input(false);
+  readonly isDragOver = input(false);
   readonly showFile = input(false);
   readonly showRank = input(false);
-
-  readonly clicked = output<void>();
-  readonly dragStarted = output<void>();
-  readonly dragEnded = output<void>();
-  readonly dropped = output<void>();
 
   readonly label = computed(() => `${this.file()}${this.rank()}`);
 
@@ -83,23 +77,7 @@ export class ChessSquareComponent {
     return (files.indexOf(this.file()) + this.rank()) % 2 === 0;
   });
 
-  readonly squareBg = computed(() => {
-    const light = this.isLight();
-    return light ? 'bg-[#e8d484]' : 'bg-[#b85c6e]';
-  });
+  readonly squareBg = computed(() => (this.isLight() ? 'bg-[#e8d484]' : 'bg-[#b85c6e]'));
 
-  readonly coordColor = computed(() =>
-    this.isLight() ? 'text-[#b85c6e]' : 'text-[#e8d484]'
-  );
-
-  onDragStart(event: DragEvent): void {
-    event.dataTransfer!.effectAllowed = 'move';
-    event.dataTransfer!.setData('text/plain', this.label());
-    this.dragStarted.emit();
-  }
-
-  onDrop(event: DragEvent): void {
-    event.preventDefault();
-    this.dropped.emit();
-  }
+  readonly coordColor = computed(() => (this.isLight() ? 'text-[#b85c6e]' : 'text-[#e8d484]'));
 }

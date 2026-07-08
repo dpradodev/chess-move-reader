@@ -66,6 +66,19 @@ import { Component, input, output } from '@angular/core';
         </svg>
       </button>
 
+      <!-- Voltear tablero -->
+      <button
+        (click)="flip.emit()"
+        class="flex h-10 w-10 items-center justify-center rounded-xl text-[#7a4a58] transition-colors
+               hover:bg-[#f0d8dc] hover:text-[#8a3a4e] active:bg-[#e8c8d0]"
+        title="Voltear tablero" aria-label="Voltear tablero"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0114.13-5.36M20 15a9 9 0 01-14.13 5.36" />
+        </svg>
+      </button>
+
     </div>
   `,
 })
@@ -78,4 +91,5 @@ export class BoardControlsComponent {
   readonly stepBack = output<void>();
   readonly stepForward = output<void>();
   readonly goEnd = output<void>();
+  readonly flip = output<void>();
 }
