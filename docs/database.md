@@ -1,5 +1,13 @@
 # Ver la base de datos
 
+> **Desactualizado (2026-07-08):** este documento describe el esquema del backend
+> Python/FastAPI retirado (`analysis_requests`/`analysis_moves`). El nuevo backend
+> Java (`apps/api`, ver [`docs/backend-java-architecture.md`](backend-java-architecture.md))
+> todavía no tiene ninguna migración escrita, así que estas tablas no existen
+> todavía. La conexión a Postgres (host/puerto/credenciales) sigue siendo válida
+> tal cual — eso no depende del backend. Pendiente de actualizar los nombres de
+> tabla y las queries de ejemplo cuando se implemente el módulo `ocr`/`planillas`.
+
 Postgres corre en el contenedor `db` de `docker-compose.yml`, expuesto en `localhost:5432`.
 Credenciales y nombre de la base están en `.env` (copiado de `.env.example`):
 

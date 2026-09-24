@@ -1,5 +1,13 @@
 # Pipeline de visión (`apps/ocr`)
 
+> **Parcialmente desactualizado (2026-07-08):** `apps/ocr` en sí (este documento
+> es principalmente sobre él) no ha cambiado. Pero las referencias a `apps/api`
+> más abajo (`HttpOcrClient`, `apps/api/app/ocr_client.py`, `analysis_moves`)
+> describen el backend Python retirado — el nuevo backend Java (ver
+> [`docs/backend-java-architecture.md`](backend-java-architecture.md)) planea el
+> mismo patrón (`ScoresheetOcrProvider`) pero con otros nombres de clase/tabla, y
+> todavía no está implementado.
+
 ## Enfoque
 
 En vez de un pipeline clásico de OCR (detección de rejilla + reconocimiento de

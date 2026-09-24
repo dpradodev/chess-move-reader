@@ -1,5 +1,12 @@
 # Ver las imágenes subidas
 
+> **Desactualizado (2026-07-08):** este documento describe el backend
+> Python/FastAPI retirado. El nuevo backend Java (`apps/api`, ver
+> [`docs/backend-java-architecture.md`](backend-java-architecture.md)) planea el
+> mismo enfoque (filesystem + volumen Docker en `STORAGE_DIR`, endpoint
+> `GET /api/v1/analyses/{id}/image`) pero todavía no está implementado — nada de
+> esto funciona hasta que se construya el módulo `ocr`.
+
 Cada planilla subida se guarda en disco en `STORAGE_DIR` (variable de `.env`), con el nombre
 `<analysis_id>.<ext>`. La ruta exacta de cada imagen queda en la columna `image_path` de
 `analysis_requests` (ver [`docs/database.md`](database.md)).

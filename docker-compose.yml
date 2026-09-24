@@ -10,26 +10,41 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chess}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   api:
     build: ./apps/api
     restart: unless-stopped
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-chess}:${POSTGRES_PASSWORD:-chess}@db:5432/${POSTGRES_DB:-chess_move_reader}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-chess_move_reader}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-chess}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-chess}
       STORAGE_DIR: /data/uploads
       MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-["http://localhost:4200"]}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:4200,http://localhost:4201}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env -- see .env.example}
       OCR_CLIENT: ${OCR_CLIENT:-mock}
       # Hostname interno de Docker Compose -- deliberadamente NO usa ${OCR_SERVICE_URL}
       # del .env, que apunta a localhost:8001 para el flujo de desarrollo sin Docker
-      # (uvicorn en el host). Dentro de los contenedores, "ocr" resuelve al servicio.
+      # (Maven en el host). Dentro de los contenedores, "ocr" resuelve al servicio.
       OCR_SERVICE_URL: http://ocr:8000
     ports:
       - "8000:8000"
     volumes:
       - uploads:/data/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   ocr:
     build: ./apps/ocr

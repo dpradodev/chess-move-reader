@@ -1,11 +1,18 @@
-FROM python:3.13-slim
-
+# Multi-stage build: compile with the JDK, run on the (smaller) JRE.
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Cache dependencies in their own layer -- only re-downloads when pom.xml changes.
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+RUN chmod +x mvnw && ./mvnw -B dependency:go-offline
 
-COPY app ./app
+COPY src ./src
+RUN ./mvnw -B clean package -DskipTests
+
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /app/target/api-*.jar app.jar
 
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
